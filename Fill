@@ -1,0 +1,212 @@
+#include <iostream>
+#include <ctime> 
+#include <windows.h> 
+
+using namespace std;
+
+int player = 1; // initialize the player variable to 1
+int flips = 0; // initialize the flips variable to 0
+time_t startTime; // declare a variable to store the start time of the game
+
+void switchPlayer(); // function prototype for switchPlayer
+void playGame(char** field, char** values, int size); // function prototype for playGame
+bool checkWin(char** field, int size); // function prototype for checkWin
+void playerChoose(char** field, char** values, int size); // function prototype for playerChoose
+void Display_the_field(char** field, int size); // function prototype for Display_the_field
+void FillStars(char** field, int size); // function prototype for FillStars
+void FillField(int size); // function prototype for FillField
+
+// define the switchPlayer function
+void switchPlayer() {
+    if (player == 1) { // if the current player is 1
+        player = 2; // switch to player 2
+    }
+    else { 
+        player = 1; // switch to player 1
+    }
+}
+
+// define the playGame function
+void playGame(char** field, char** values, int size) {
+    startTime = time(NULL); // set the start time to the current time
+    while (true) { 
+        playerChoose(field, values, size); // call the playerChoose function with the given arguments
+        if (checkWin(field, size)) { // if the checkWin function returns true
+            cout << "Player " << player << " wins!" << endl;
+            break; 
+        }
+    }
+    time_t endTime = time(NULL); // set the end time to the current time
+    cout << "Game time: " << endTime - startTime << " seconds" << endl; 
+    cout << "Total flips: " << flips << endl; 
+}
+
+// define the checkWin function
+bool checkWin(char** field, int size) {
+    for (int i = 0; i < size; i++) { // loop through each row of the field array
+        for (int j = 0; j < size; j++) { // loop through each column of the field array
+            if (field[i][j] != ' ') { // if the current element is not equal to a space character
+                return false; // return false (the game is not won yet)
+            }
+        }
+    }
+    return true; // if all elements are equal to a space character, return true (the game is won)
+}
+
+// define the playerChoose function
+void playerChoose(char** field, char** values, int size) {
+    int x1, y1;
+    int x2, y2;
+    cout << "Player " << player << ", enter first coordinates (x y): ";
+    cin >> x1 >> y1;
+    x1 = x1 - 1;
+    y1 = y1 - 1;
+    static int prevX1 = -1, prevY1 = -1, prevX2 = -1, prevY2 = -1; // declare and initialize static variables to store the previous coordinates entered by the user
+
+    if (x1 >= 0 && x1 < size && y1 >= 0 && y1 < size) { // if the first coordinates entered by the user are within the bounds of the field array
+        field[x1][y1] = values[x1][y1]; // set the element of the field array at the first coordinates to the corresponding element of the values array
+        Display_the_field(field, size); // call the Display_the_field function with the given arguments
+        field[x1][y1] = '*'; // set the element of the field array at the first coordinates to an asterisk
+        flips++; // increment the flips variable by 1
+    }
+    else { 
+        cout << "Invalid coordinates!" << endl;
+        return;
+    }
+
+    cout << "Player " << player << ", enter second coordinates (x y): ";
+    cin >> x2 >> y2;
+    x2 = x2 - 1;
+    y2 = y2 - 1;
+
+    if (x2 >= 0 && x2 < size && y2 >= 0 && y2 < size) { // if the second coordinates entered by the user are within the bounds of the field array
+        field[x2][y2] = values[x2][y2]; // set the element of the field array at the second coordinates to the corresponding element of the values array
+        Display_the_field(field, size); // call the Display_the_field function with the given arguments
+        field[x2][y2] = '*'; // set the element of the field array at the second coordinates to an asterisk
+        flips++; // increment the flips variable by 1
+        if (values[x1][y1] == values[x2][y2]) { // if the elements of the values array at the first and second coordinates are equal
+            Beep(750, 300); // play a beep sound with a frequency of 750 Hz and a duration of 300 milliseconds
+            field[x1][y1] = ' '; // set the element of the field array at the first coordinates to a space character
+            field[x2][y2] = ' '; // set the element of the field array at the second coordinates to a space character
+            Display_the_field(field, size); // call the Display_the_field function with the given arguments
+        }
+        else { // otherwise (if the elements of the values array at the first and second coordinates are not equal)
+            Beep(300, 300); // sound
+            field[x1][y1] = '*'; // set the element of the field array at the first coordinates to an asterisk
+            field[x2][y2] = '*'; // set the element of the field array at the second coordinates to an asterisk
+            Sleep(2000); // pause execution for 2000 milliseconds (2 seconds)
+            system("cls"); // clear the console
+            Display_the_field(field, size); // call the Display_the_field function with the given arguments
+            switchPlayer(); // call the switchPlayer function to switch to the next player
+        }
+
+    }
+    else {
+        cout << "Invalid coordinates!" << endl;
+    }
+    if (x1 == prevX1 && y1 == prevY1 && x2 == prevX2 && y2 == prevY2) { // if the current coordinates entered by the user are the same as the previous coordinates
+        cout << "You have already entered these coordinates. Please try again." << endl;
+        return; 
+    }
+    else { // otherwise (if the current coordinates entered by the user are not the same as the previous coordinates)
+        prevX1 = x1; // set prevX1 to x1
+        prevY1 = y1; // set prevY1 to y1
+        prevX2 = x2; // set prevX2 to x2
+        prevY2 = y2; // set prevY2 to y2
+    }
+}
+
+// define the Display_the_field function
+void Display_the_field(char** field, int size) {
+    for (int i = 0; i < size; i++) { 
+        cout << "+"; 
+        for (int k = 0; k < size; k++) { 
+            cout << "--+"; 
+        }
+        cout << endl; 
+        for (int j = 0; j < size; j++) { 
+            cout << "|" << field[i][j] << " "; 
+        }
+        cout << "|" << endl; 
+    }
+    cout << "+"; 
+    for (int k = 0; k < size; k++) { 
+        cout << "--+"; 
+    }
+    cout << endl; 
+}
+
+// define the FillStars function
+void FillStars(char** field, int size) {
+    for (int i = 0; i < size; i++) { 
+        for (int j = 0; j < size; j++) { 
+            field[i][j] = '*'; // set the current element of the field array to an asterisk
+        }
+    }
+    Display_the_field(field, size); // call the Display_the_field function with the given arguments
+}
+
+// define the FillField function
+void FillField(int size) {
+    srand(time(NULL)); // initialize the random seed using the current time
+
+    char** field = new char* [size]; // dynamically allocate memory for an array of pointers to char arrays (rows)
+    char** values = new char* [size]; // dynamically allocate memory for an array of pointers to char arrays (rows)
+
+    for (int i = 0; i < size; i++) { // loop through each row of the arrays
+        field[i] = new char[size]; // dynamically allocate memory for a char array (column) in each row of the field array
+        values[i] = new char[size]; // dynamically allocate memory for a char array (column) in each row of the values array
+    }
+
+    char letter = 'A'; // initialize a letter variable to 'A'
+    char letter_2 = 'A'; // initialize a letter_2 variable to 'A'
+
+    for (int i = 0; i < size; i++) { // loop through each row of the first half of the field array
+        for (int j = 0; j < size / 2; j++) { // loop through each column of the first half of the field array
+            field[i][j] = letter++; // set the current element of the field array to letter and increment letter by 1
+        }
+    }
+    for (int i = 0; i < size; i++) { // loop through each row of the second half of the field array
+        for (int j = size / 2; j < size; j++) { // loop through each column of the second half of the field array
+            field[i][j] = letter_2++; // set the current element of the field array to letter_2 and increment letter_2 by 1
+        }
+    }
+
+    for (int i = 0; i < size; i++) { // loop through each row of the field array
+        for (int j = 0; j < size; j++) { // loop through each column of the field array
+            int r1 = rand() % size; // generate a random number between 0 and size-1 and store it in r1
+            int r2 = rand() % size; // generate a random number between 0 and size-1 and store it in r2
+            char temp = field[i][j]; // store the current element of the field array in a temporary variable
+            field[i][j] = field[r1][r2]; // set the current element of the field array to the element at the randomly generated coordinates
+            field[r1][r2] = temp; // set the element at the randomly generated coordinates to the value stored in the temporary variable
+        }
+    }
+
+    for (int i = 0; i < size; i++) { // loop through each row of the values array
+        for (int j = 0; j < size; j++) { // loop through each column of the values array
+            values[i][j] = field[i][j]; // set the current element of the values array to the corresponding element of the field array
+        }
+    }
+
+    for (int i = 0; i < size; i++) { 
+        cout << "+"; 
+        for (int k = 0; k < size; k++) { 
+            cout << "--+"; 
+        }
+        cout << endl; 
+        for (int j = 0; j < size; j++) { 
+            cout << "|" << field[i][j] << " "; 
+        }
+        cout << "|" << endl; 
+    }
+    cout << "+"; 
+    for (int k = 0; k < size; k++) { 
+        cout << "--+";
+    }
+    cout << endl; 
+    Sleep(500); // pause execution for 500 milliseconds
+    system("cls"); // clear the console
+
+    FillStars(field, size); // call the FillStars function with the given arguments
+    playGame(field, values, size); // call the playGame function with the given arguments
+}
