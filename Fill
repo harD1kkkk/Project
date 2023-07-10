@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int player = 1; // initialize the player variable to 1
+int player = rand() % 2 + 1; // generate a random number between 1 and 2 and assign it to the player variable
 int flips = 0; // initialize the flips variable to 0
 time_t startTime; // declare a variable to store the start time of the game
 int player1Points = 0; // initialize the player1Points variable to 0
