@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int player = rand() % 2 + 1; // generate a random number between 1 and 2 and assign it to the player variable
+int player;
 int flips = 0; // initialize the flips variable to 0
 time_t startTime; // declare a variable to store the start time of the game
 int player1Points = 0; // initialize the player1Points variable to 0
@@ -168,7 +168,7 @@ void FillStars(char** field, int size) {
 // define the FillField function
 void FillField(int size) {
     srand(time(NULL)); // initialize the random seed using the current time
-
+    player = rand() % 2 + 1; // generate a random number between 1 and 2 and assign it to the player variable
     char** field = new char* [size]; // dynamically allocate memory for an array of pointers to char arrays (rows)
     char** values = new char* [size]; // dynamically allocate memory for an array of pointers to char arrays (rows)
 
