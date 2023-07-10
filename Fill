@@ -1,12 +1,15 @@
+#pragma once
 #include <iostream>
-#include <ctime> 
-#include <windows.h> 
+#include <ctime>
+#include <windows.h>
 
 using namespace std;
 
 int player = 1; // initialize the player variable to 1
 int flips = 0; // initialize the flips variable to 0
 time_t startTime; // declare a variable to store the start time of the game
+int player1Points = 0; // initialize the player1Points variable to 0
+int player2Points = 0; // initialize the player2Points variable to 0
 
 void switchPlayer(); // function prototype for switchPlayer
 void playGame(char** field, char** values, int size); // function prototype for playGame
@@ -21,7 +24,7 @@ void switchPlayer() {
     if (player == 1) { // if the current player is 1
         player = 2; // switch to player 2
     }
-    else { 
+    else {
         player = 1; // switch to player 1
     }
 }
@@ -29,16 +32,24 @@ void switchPlayer() {
 // define the playGame function
 void playGame(char** field, char** values, int size) {
     startTime = time(NULL); // set the start time to the current time
-    while (true) { 
+    while (true) {
         playerChoose(field, values, size); // call the playerChoose function with the given arguments
         if (checkWin(field, size)) { // if the checkWin function returns true
-            cout << "Player " << player << " wins!" << endl;
-            break; 
+            if (player1Points > player2Points) { // if player1Points is greater than player2Points
+                cout << "Player 1 wins with " << player1Points << " points!" << endl; // print a message indicating that player 1 wins with their point total
+            }
+            else if (player2Points > player1Points) { // if player2Points is greater than player1Points
+                cout << "Player 2 wins with " << player2Points << " points!" << endl; // print a message indicating that player 2 wins with their point total
+            }
+            else { // otherwise (if player1Points and player2Points are equal)
+                cout << "It's a tie with " << player1Points << " points each!" << endl; // print a message indicating that it's a tie with each players' point total
+            }
+            break;
         }
     }
     time_t endTime = time(NULL); // set the end time to the current time
-    cout << "Game time: " << endTime - startTime << " seconds" << endl; 
-    cout << "Total flips: " << flips << endl; 
+    cout << "Game time: " << endTime - startTime << " seconds" << endl; // print the game time by subtracting the start time from the end time and converting it to seconds
+    cout << "Total flips: " << flips << endl; // print the total number of flips by accessing the flips variable
 }
 
 // define the checkWin function
@@ -61,15 +72,18 @@ void playerChoose(char** field, char** values, int size) {
     cin >> x1 >> y1;
     x1 = x1 - 1;
     y1 = y1 - 1;
-    static int prevX1 = -1, prevY1 = -1, prevX2 = -1, prevY2 = -1; // declare and initialize static variables to store the previous coordinates entered by the user
 
-    if (x1 >= 0 && x1 < size && y1 >= 0 && y1 < size) { // if the first coordinates entered by the user are within the bounds of the field array
-        field[x1][y1] = values[x1][y1]; // set the element of the field array at the first coordinates to the corresponding element of the values array
-        Display_the_field(field, size); // call the Display_the_field function with the given arguments
-        field[x1][y1] = '*'; // set the element of the field array at the first coordinates to an asterisk
-        flips++; // increment the flips variable by 1
+    if (x1 >= 0 && x1 < size && y1 >= 0 && y1 < size) {
+        if (field[x1][y1] == ' ') {
+            cout << "This card has already been flipped!" << endl;
+            return;
+        }
+        field[x1][y1] = values[x1][y1];
+        Display_the_field(field, size);
+        field[x1][y1] = '*';
+        flips++;
     }
-    else { 
+    else {
         cout << "Invalid coordinates!" << endl;
         return;
     }
@@ -79,71 +93,76 @@ void playerChoose(char** field, char** values, int size) {
     x2 = x2 - 1;
     y2 = y2 - 1;
 
-    if (x2 >= 0 && x2 < size && y2 >= 0 && y2 < size) { // if the second coordinates entered by the user are within the bounds of the field array
-        field[x2][y2] = values[x2][y2]; // set the element of the field array at the second coordinates to the corresponding element of the values array
-        Display_the_field(field, size); // call the Display_the_field function with the given arguments
-        field[x2][y2] = '*'; // set the element of the field array at the second coordinates to an asterisk
-        flips++; // increment the flips variable by 1
-        if (values[x1][y1] == values[x2][y2]) { // if the elements of the values array at the first and second coordinates are equal
-            Beep(750, 300); // play a beep sound with a frequency of 750 Hz and a duration of 300 milliseconds
-            field[x1][y1] = ' '; // set the element of the field array at the first coordinates to a space character
-            field[x2][y2] = ' '; // set the element of the field array at the second coordinates to a space character
-            Display_the_field(field, size); // call the Display_the_field function with the given arguments
+    if (x2 >= 0 && x2 < size && y2 >= 0 && y2 < size) {
+        if (x1 == x2 && y1 == y2) {
+            cout << "You cannot choose the same card twice!" << endl;
+            return;
         }
-        else { // otherwise (if the elements of the values array at the first and second coordinates are not equal)
-            Beep(300, 300); // sound
-            field[x1][y1] = '*'; // set the element of the field array at the first coordinates to an asterisk
-            field[x2][y2] = '*'; // set the element of the field array at the second coordinates to an asterisk
-            Sleep(2000); // pause execution for 2000 milliseconds (2 seconds)
-            system("cls"); // clear the console
-            Display_the_field(field, size); // call the Display_the_field function with the given arguments
-            switchPlayer(); // call the switchPlayer function to switch to the next player
+        if (field[x2][y2] == ' ') {
+            cout << "This card has already been flipped!" << endl;
+            return;
+        }
+        field[x2][y2] = values[x2][y2];
+        Display_the_field(field, size);
+        field[x2][y2] = '*';
+        flips++;
+        if (values[x1][y1] == values[x2][y2]) {
+            Beep(750, 300);
+            field[x1][y1] = ' ';
+            field[x2][y2] = ' ';
+            Display_the_field(field, size);
+            if (player == 1) { // if the current player is player 1
+                player1Points += 10; // increment player1Points by 10
+            }
+            else { // otherwise (if the current player is player 2)
+                player2Points += 10; // increment player2Points by 10
+            }
+        }
+        else {
+            Beep(300, 300);
+            field[x1][y1] = '*';
+            field[x2][y2] = '*';
+            Sleep(2000);
+            system("cls");
+            Display_the_field(field, size);
+            switchPlayer();
         }
 
     }
     else {
         cout << "Invalid coordinates!" << endl;
     }
-    if (x1 == prevX1 && y1 == prevY1 && x2 == prevX2 && y2 == prevY2) { // if the current coordinates entered by the user are the same as the previous coordinates
-        cout << "You have already entered these coordinates. Please try again." << endl;
-        return; 
-    }
-    else { // otherwise (if the current coordinates entered by the user are not the same as the previous coordinates)
-        prevX1 = x1; // set prevX1 to x1
-        prevY1 = y1; // set prevY1 to y1
-        prevX2 = x2; // set prevX2 to x2
-        prevY2 = y2; // set prevY2 to y2
-    }
 }
+
 
 // define the Display_the_field function
 void Display_the_field(char** field, int size) {
-    for (int i = 0; i < size; i++) { 
-        cout << "+"; 
-        for (int k = 0; k < size; k++) { 
-            cout << "--+"; 
+    for (int i = 0; i < size; i++) {
+        cout << "+";
+        for (int k = 0; k < size; k++) {
+            cout << "--+";
         }
-        cout << endl; 
-        for (int j = 0; j < size; j++) { 
-            cout << "|" << field[i][j] << " "; 
+        cout << endl;
+        for (int j = 0; j < size; j++) {
+            cout << "|" << field[i][j] << " ";
         }
-        cout << "|" << endl; 
+        cout << "|" << endl;
     }
-    cout << "+"; 
-    for (int k = 0; k < size; k++) { 
-        cout << "--+"; 
+    cout << "+";
+    for (int k = 0; k < size; k++) {
+        cout << "--+";
     }
-    cout << endl; 
+    cout << endl;
 }
 
 // define the FillStars function
 void FillStars(char** field, int size) {
-    for (int i = 0; i < size; i++) { 
-        for (int j = 0; j < size; j++) { 
-            field[i][j] = '*'; // set the current element of the field array to an asterisk
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            field[i][j] = '*';
         }
     }
-    Display_the_field(field, size); // call the Display_the_field function with the given arguments
+    Display_the_field(field, size);
 }
 
 // define the FillField function
